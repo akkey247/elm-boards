@@ -7,7 +7,9 @@ import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
 import Id exposing (Id)
 import Page.Index as IndexPage
-import Page.View as ViewPage
+import Page.New as NewPage
+import Page.Show as ShowPage
+import Page.Edit as EditPage
 import Route exposing (Route)
 import Url
 
@@ -31,7 +33,9 @@ main =
 type Model
     = NotFound Env
     | Index Env IndexPage.Model
-    | View Env Id ViewPage.Model
+    | New Env NewPage.Model
+    | Show Env Id ShowPage.Model
+    | Edit Env Id EditPage.Model
 
 
 type alias Flags =
@@ -54,7 +58,9 @@ type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | GotIndexMsg IndexPage.Msg
-    | GotViewMsg ViewPage.Msg
+    | GotNewMsg NewPage.Msg
+    | GotShowMsg ShowPage.Msg
+    | GotEditMsg EditPage.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -88,9 +94,17 @@ update message model =
             IndexPage.update subMsg subModel
                 |> updateWith (Index env) GotIndexMsg
 
-        ( GotViewMsg subMsg, View _ id subModel ) ->
-            ViewPage.update subMsg subModel
-                |> updateWith (View env id) GotViewMsg
+        ( GotNewMsg subMsg, New _ subModel ) ->
+            NewPage.update subMsg subModel
+                |> updateWith (New env) GotNewMsg
+
+        ( GotShowMsg subMsg, Show _ id subModel ) ->
+            ShowPage.update subMsg subModel
+                |> updateWith (Show env id) GotShowMsg
+
+        ( GotEditMsg subMsg, Edit _ id subModel ) ->
+            EditPage.update subMsg subModel
+                |> updateWith (Edit env id) GotEditMsg
 
         ( _, _ ) ->
             ( model, Cmd.none )
@@ -110,9 +124,17 @@ changeRouteTo maybeRoute model =
             IndexPage.init env
                 |> updateWith (Index env) GotIndexMsg
 
-        Just (Route.View id) ->
-            ViewPage.init env id
-                |> updateWith (View env id) GotViewMsg
+        Just Route.New ->
+            NewPage.init env
+                |> updateWith (New env) GotNewMsg
+
+        Just (Route.Show id) ->
+            ShowPage.init env id
+                |> updateWith (Show env id) GotShowMsg
+
+        Just (Route.Edit id) ->
+            EditPage.init env id
+                |> updateWith (Edit env id) GotEditMsg
 
 
 toEnv : Model -> Env
@@ -124,7 +146,13 @@ toEnv page =
         Index env _ ->
             env
 
-        View env _ _ ->
+        New env _ ->
+            env
+
+        Show env _ _ ->
+            env
+
+        Edit env _ _ ->
             env
 
 
@@ -148,8 +176,14 @@ subscriptions model =
         Index _ subModel ->
             Sub.map GotIndexMsg (IndexPage.subscriptions subModel)
 
-        View _ _ subModel ->
-            Sub.map GotViewMsg (ViewPage.subscriptions subModel)
+        New _ subModel ->
+            Sub.map GotNewMsg (NewPage.subscriptions subModel)
+
+        Show _ _ subModel ->
+            Sub.map GotShowMsg (ShowPage.subscriptions subModel)
+
+        Edit _ _ subModel ->
+            Sub.map GotEditMsg (EditPage.subscriptions subModel)
 
 
 
@@ -169,5 +203,11 @@ view model =
         Index _ subModel ->
             viewPage GotIndexMsg (IndexPage.view subModel)
 
-        View _ _ subModel ->
-            viewPage GotViewMsg (ViewPage.view subModel)
+        New _ subModel ->
+            viewPage GotNewMsg (NewPage.view subModel)
+
+        Show _ _ subModel ->
+            viewPage GotShowMsg (ShowPage.view subModel)
+
+        Edit _ _ subModel ->
+            viewPage GotEditMsg (EditPage.view subModel)
