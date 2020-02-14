@@ -78,6 +78,7 @@ view model =
     { title = "elm-my-app - index"
     , body =
         [ text "Index:"
-        , ul [] <| List.map (\item -> li [] [ a [ Route.href <| Route.View item.id ] [ text item.name ] ]) model.items
+        , a [ Route.href Route.New ] [ text "New" ]
+        , ul [] <| List.map (\item -> li [] [ text item.name, a [ Route.href <| Route.Show item.id ] [ text "Show" ] ]) model.items
         ]
     }

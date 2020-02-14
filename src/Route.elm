@@ -9,14 +9,18 @@ import Url.Parser as Parser exposing ((</>), Parser)
 
 type Route
     = Index
-    | View Id
+    | New
+    | Show Id
+    | Edit Id
 
 
 parser : Parser (Route -> a) a
 parser =
     Parser.oneOf
         [ Parser.map Index (Parser.s "boards")
-        , Parser.map View (Parser.s "boards" </> Parser.s "view" </> Id.idParser)
+        , Parser.map New (Parser.s "boards" </> Parser.s "new")
+        , Parser.map Show (Parser.s "boards" </> Parser.s "show" </> Id.idParser)
+        , Parser.map Edit (Parser.s "boards" </> Parser.s "edit" </> Id.idParser)
         ]
 
 
@@ -38,7 +42,13 @@ routeToString page =
                 Index ->
                     []
 
-                View id ->
-                    [ "view", Id.toString id ]
+                New ->
+                    [ "new" ]
+
+                Show id ->
+                    [ "show", Id.toString id ]
+
+                Edit id ->
+                    [ "edit", Id.toString id ]
     in
     "/boards/" ++ String.join "/" pieces

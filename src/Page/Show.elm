@@ -1,4 +1,4 @@
-module Page.View exposing (Model, Msg, init, subscriptions, update, view)
+module Page.Show exposing (Model, Msg, init, subscriptions, update, view)
 
 import Env exposing (Env)
 import Html exposing (..)
@@ -53,9 +53,10 @@ subscriptions model =
 
 view : Model -> { title : String, body : List (Html Msg) }
 view model =
-    { title = "elm-my-app - view"
+    { title = "elm-my-app - show"
     , body =
         [ a [ Route.href Route.Index ] [ text "Back to Index" ]
-        , p [] [ text <| "view " ++ Id.toString model.id ]
+        , p [] [ text <| "show " ++ Id.toString model.id ]
+        , a [ Route.href <| Route.Edit model.id ] [ text "Edit" ]
         ]
     }
