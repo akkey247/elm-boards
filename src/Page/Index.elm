@@ -1,7 +1,13 @@
 module Page.Index exposing (Model, Msg, init, subscriptions, update, view)
 
-import Env exposing (Env)
+import Bootstrap.CDN as CDN
+import Bootstrap.Navbar as Navbar
+import Bootstrap.Grid as Grid
+import Bootstrap.Button as Button
+import Bootstrap.Table as Table
 import Html exposing (..)
+import Html.Attributes exposing (..)
+import Env exposing (Env)
 import Id exposing (Id)
 import Json.Decode as JD
 import Route
@@ -14,6 +20,7 @@ import Route
 type alias Model =
     { env : Env
     , items : List Item
+    , navState : Navbar.State
     }
 
 
@@ -39,9 +46,11 @@ init env =
                             _ ->
                                 Nothing
                     )
+        ( navState, navCmd ) =
+            Navbar.initialState NavMsg
     in
-    ( Model env items
-    , Cmd.none
+    ( Model env items navState
+    , navCmd
     )
 
 
@@ -50,14 +59,16 @@ init env =
 
 
 type Msg
-    = NoOps
+    = NavMsg Navbar.State
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOps ->
-            ( model, Cmd.none )
+        NavMsg state ->
+            ( { model | navState = state }
+            , Cmd.none
+            )
 
 
 
@@ -66,7 +77,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Navbar.subscriptions model.navState NavMsg
 
 
 
@@ -77,8 +88,48 @@ view : Model -> { title : String, body : List (Html Msg) }
 view model =
     { title = "elm-my-app - index"
     , body =
-        [ text "Index:"
-        , a [ Route.href Route.New ] [ text "New" ]
-        , ul [] <| List.map (\item -> li [] [ text item.name, a [ Route.href <| Route.Show item.id ] [ text "Show" ] ]) model.items
+        [ CDN.stylesheet
+        , Grid.container []
+            [ menu model
+            , viewTable model.items
+            ]
         ]
     }
+
+menu : Model -> Html Msg
+menu model =
+    Navbar.config NavMsg
+        |> Navbar.withAnimation
+        |> Navbar.container
+        |> Navbar.brand [] [ text "Index" ]
+        |> Navbar.customItems
+            [ Navbar.textItem []
+                [
+                    Button.linkButton
+                        [ Button.outlineDark, Button.attrs [ Route.href Route.New ] ]
+                        [ text "New" ]
+                ]
+            ]
+        |> Navbar.view model.navState
+
+viewTable : List Item -> Html Msg
+viewTable items =
+    Table.table
+        { options = [ Table.striped, Table.hover ]
+        , thead =
+            Table.simpleThead
+                [ Table.th [] [ text "id" ]
+                , Table.th [] [ text "name" ]
+                , Table.th [] [ text "" ]
+                ]
+        , tbody =
+            Table.tbody [] (List.map viewTr items)
+        }
+
+viewTr : Item -> Table.Row Msg
+viewTr item =
+    Table.tr []
+        [ Table.td [] [ text (Id.toString item.id) ]
+        , Table.td [] [ text item.name ]
+        , Table.td [ Table.cellAttr (class "text-right") ] [ Button.linkButton [ Button.outlineDark, Button.small, Button.attrs [ Route.href <| Route.Show item.id ] ] [ text "Show" ] ]
+        ]
