@@ -49,9 +49,9 @@ init env =
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
     in
-    ( Model env items navState
-    , navCmd
-    )
+        ( Model env items navState
+        , navCmd
+        )
 
 
 
