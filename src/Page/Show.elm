@@ -10,7 +10,6 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Env exposing (Env)
-import Id exposing (Id)
 import Route
 
 
@@ -20,12 +19,12 @@ import Route
 
 type alias Model =
     { env : Env
-    , id : Id
+    , id : Int
     , navState : Navbar.State
     }
 
 
-init : Env -> Id -> ( Model, Cmd Msg )
+init : Env -> Int -> ( Model, Cmd Msg )
 init env id =
     let
         ( navState, navCmd ) =
