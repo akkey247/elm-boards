@@ -12,11 +12,11 @@ import Route
 
 type alias Model =
     { env : Env
-    , id : Id
+    , id : Int
     }
 
 
-init : Env -> Id -> ( Model, Cmd Msg )
+init : Env -> Int -> ( Model, Cmd Msg )
 init env id =
     ( Model env id
     , Cmd.none
@@ -56,6 +56,6 @@ view model =
     { title = "elm-my-app - edit"
     , body =
         [ a [ Route.href <| Route.Show model.id ] [ text "Back to Show" ]
-        , p [] [ text <| "edit " ++ Id.toString model.id ]
+        , p [] [ text <| "edit " ++ String.fromInt model.id ]
         ]
     }

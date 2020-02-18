@@ -162,5 +162,5 @@ viewThreadItem thread =
     Table.tr []
         [ Table.td [] [ text <| String.fromInt thread.id ]
         , Table.td [] [ text thread.title ]
-        , Table.td [ Table.cellAttr (class "text-right") ] [ Button.linkButton [ Button.outlineDark, Button.small, Button.attrs [ href "#" ] ] [ text "Show" ] ]
+        , Table.td [ Table.cellAttr (class "text-right") ] [ Button.linkButton [ Button.outlineDark, Button.small, Button.attrs [ Route.href <| Route.Show thread.id ] ] [ text "Show" ] ]
         ]
