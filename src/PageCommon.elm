@@ -1,6 +1,10 @@
 module PageCommon exposing (..)
 
-type PageState
-    = Loading
-    | Success
-    | Failure
+import Http
+
+type PageState a
+    = NotAsked
+    | Loading
+    | Success a
+    | Failure Http.Error
+
