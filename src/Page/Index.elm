@@ -21,20 +21,18 @@ import PageCommon exposing (..)
 
 type alias Model =
     { env : Env
-    , threads : List Thread
-    , pageState : PageState
+    , responseThreads : PageState (List Thread)
     , navState : Navbar.State
     }
 
 init : Env -> ( Model, Cmd Msg )
 init env =
     let
-        threads = [ Thread 0 "" "" ]
-        pageState = Loading
+        responseThreads = Loading
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
     in
-        ( Model env threads pageState navState
+        ( Model env responseThreads navState
         , navCmd
         )
 
@@ -50,7 +48,7 @@ update msg model =
     case msg of
         NavMsg state ->
             ( { model | navState = state }
-            , case model.pageState of
+            , case model.responseThreads of
                 Loading ->
                     getThreads
 
@@ -61,10 +59,10 @@ update msg model =
         GotThreads result ->
             case result of
                 Ok threads ->
-                    ( { model | pageState = Success, threads = threads }, Cmd.none )
+                    ( { model | responseThreads = Success threads }, Cmd.none )
 
-                Err _ ->
-                    ( { model | pageState = Failure }, Cmd.none )
+                Err error ->
+                    ( { model | responseThreads = Failure error }, Cmd.none )
 
 
 -- SUBSCRIPTIONS
@@ -84,14 +82,14 @@ view model =
         , Grid.container []
             [ viewNavbar model
             , section [ Spacing.mt4 ] [
-                case model.pageState of
+                case model.responseThreads of
                     Loading ->
                         viewLoading
 
-                    Success ->
-                        viewThreadList model.threads
+                    Success threads ->
+                        viewThreadList threads
 
-                    Failure ->
+                    _ ->
                         text "Failed..."
                 ]
             ]
@@ -110,7 +108,7 @@ getThreads =
             , Http.header "Accept" "application/json"
             , Http.header "Content-Type" "application/json"
             ]
-        , url = "https://api.myjson.com/bins/1d0bpo"
+        , url = "http://127.0.0.1:8000/api/boards/"
         , expect = Http.expectJson GotThreads threadsDecoder
         , body = Http.emptyBody
         , timeout = Nothing

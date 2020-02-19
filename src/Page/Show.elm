@@ -24,8 +24,7 @@ import PageCommon exposing (..)
 type alias Model =
     { env : Env
     , id : Int
-    , thread : Thread
-    , pageState : PageState
+    , responseThread : PageState Thread
     , navState : Navbar.State
     }
 
@@ -33,12 +32,11 @@ type alias Model =
 init : Env -> Int -> ( Model, Cmd Msg )
 init env id =
     let
-        thread = Thread 0 "" ""
-        pageState = Loading
+        responseThread = Loading
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
     in
-        ( Model env id thread pageState navState
+        ( Model env id responseThread navState
         , navCmd
         )
 
@@ -57,9 +55,9 @@ update msg model =
     case msg of
         NavMsg state ->
             ( { model | navState = state }
-            , case model.pageState of
+            , case model.responseThread of
                 Loading ->
-                    getThreads
+                    getThreads model.id
 
                 _ ->
                     Cmd.none
@@ -68,10 +66,10 @@ update msg model =
         GotThread result ->
             case result of
                 Ok thread ->
-                    ( { model | pageState = Success, thread = thread }, Cmd.none )
+                    ( { model | responseThread = Success thread }, Cmd.none )
 
-                Err _ ->
-                    ( { model | pageState = Failure }, Cmd.none )
+                Err error ->
+                    ( { model | responseThread = Failure error }, Cmd.none )
 
 
 
@@ -96,19 +94,19 @@ view model =
             [ menu model
             , article [ Spacing.mt2 ]
                 [
-                    case model.pageState of
+                    case model.responseThread of
                     Loading ->
                         viewLoading
 
-                    Success ->
+                    Success thread ->
                         Card.config []
                         |> Card.block []
-                            [ Block.titleH4 [] [ text model.thread.title ]
-                            , Block.text [] [ text model.thread.content ]
+                            [ Block.titleH4 [] [ text thread.title ]
+                            , Block.text [] [ text thread.content ]
                             ]
                         |> Card.view
 
-                    Failure ->
+                    _ ->
                         viewLoading
                 ]
             ]
@@ -118,8 +116,8 @@ view model =
 
 -- User-Defined Functions
 
-getThreads : Cmd Msg
-getThreads =
+getThreads : Int -> Cmd Msg
+getThreads id =
     Http.request
         { method = "GET"
         , headers =
@@ -127,7 +125,7 @@ getThreads =
             , Http.header "Accept" "application/json"
             , Http.header "Content-Type" "application/json"
             ]
-        , url = "https://api.myjson.com/bins/nqvqs"
+        , url = "http://127.0.0.1:8000/api/boards/" ++ String.fromInt id
         , expect = Http.expectJson GotThread threadDecoder
         , body = Http.emptyBody
         , timeout = Nothing
