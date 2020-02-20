@@ -3,6 +3,7 @@ module Page.Show exposing (Model, Msg, init, subscriptions, update, view)
 import Route
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Http
 import Bootstrap.CDN as CDN
 import Bootstrap.Navbar as Navbar
@@ -10,6 +11,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
 import Bootstrap.Button as Button
+import Bootstrap.Modal as Modal
 import Bootstrap.Spinner as Spinner
 import Bootstrap.Utilities.Spacing as Spacing
 import Env exposing (Env)
@@ -25,7 +27,9 @@ type alias Model =
     { env : Env
     , id : Int
     , responseThread : PageState Thread
+    , responseDelete : PageState ApiResult
     , navState : Navbar.State
+    , modalVisibility : Modal.Visibility
     }
 
 
@@ -33,10 +37,12 @@ init : Env -> Int -> ( Model, Cmd Msg )
 init env id =
     let
         responseThread = Loading
+        responseDelete = NotAsked
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
+        modalVisibility = Modal.hidden
     in
-        ( Model env id responseThread navState
+        ( Model env id responseThread responseDelete navState modalVisibility
         , navCmd
         )
 
@@ -48,6 +54,9 @@ init env id =
 type Msg
     = NavMsg Navbar.State
     | GotThread (Result Http.Error Thread)
+    | Delete
+    | Deleted (Result Http.Error ApiResult)
+    | CloseModal
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -70,6 +79,27 @@ update msg model =
 
                 Err error ->
                     ( { model | responseThread = Failure error }, Cmd.none )
+
+        Delete ->
+            ( {model | responseDelete = Loading }
+            , case model.responseThread of
+                Success thread ->
+                    deleteThread thread.id
+
+                _ ->
+                    Cmd.none
+            )
+
+        Deleted result ->
+            case result of
+                Ok deleteResult ->
+                    ( { model | responseDelete = Success deleteResult, modalVisibility = Modal.shown  }, Cmd.none )
+
+                Err error ->
+                    ( { model | responseDelete = Failure error }, Cmd.none )
+
+        CloseModal ->
+            ( { model | modalVisibility = Modal.hidden }, Cmd.none )
 
 
 
@@ -110,6 +140,34 @@ view model =
                         viewLoading
                 ]
             ]
+        , Modal.config CloseModal
+        |> Modal.small
+        |> Modal.hideOnBackdropClick True
+        |> Modal.h3 [] [ text "Message" ]
+        |> Modal.body [] [
+            p [] [
+                case model.responseDelete of
+                    Failure err ->
+                        text "Failed..."
+                    
+                    Success deleteResult ->
+                        text deleteResult.result
+
+                    Loading ->
+                        text "loading..."
+                    
+                    NotAsked ->
+                        text "not asked"
+            ]
+        ]
+        |> Modal.footer []
+            [ Button.linkButton
+                [ Button.outlinePrimary
+                , Button.attrs [ Route.href Route.Index ]
+                ]
+                [ text "OK" ]
+            ]
+        |> Modal.view model.modalVisibility
         ]
     }
 
@@ -132,6 +190,22 @@ getThreads id =
         , tracker = Nothing
         }
 
+deleteThread : Int -> Cmd Msg
+deleteThread id =
+    Http.request
+        { method = "DELETE"
+        , headers =
+            [ Http.header "Authorization" ("Bearer " ++ "jwt")
+            , Http.header "Accept" "application/json"
+            , Http.header "Content-Type" "application/json"
+            ]
+        , url = "http://127.0.0.1:8000/api/boards/" ++ String.fromInt id
+        , expect = Http.expectJson Deleted resultDecoder
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
 menu : Model -> Html Msg
 menu model =
     Navbar.config NavMsg
@@ -144,7 +218,7 @@ menu model =
                     [ Button.primary, Button.attrs [ Route.href <| Route.Edit model.id ] ]
                     [ text "Edit" ]
                 , Button.button
-                    [ Button.danger, Button.attrs [ Spacing.ml1 ] ]
+                    [ Button.danger, Button.attrs [ Spacing.ml1, onClick Delete ] ]
                     [ text "Delete" ]
                 , Button.linkButton
                     [ Button.outlineDark, Button.attrs [ Spacing.ml1, Route.href Route.Index ] ]
