@@ -27,7 +27,7 @@ type alias Model =
     { env : Env
     , id : Int
     , responseThread : PageState Thread
-    , responseDelete : PageState ApiResult
+    , responseDelete : PageState DeleteResult
     , navState : Navbar.State
     , modalVisibility : Modal.Visibility
     }
@@ -55,7 +55,7 @@ type Msg
     = NavMsg Navbar.State
     | GotThread (Result Http.Error Thread)
     | Delete
-    | Deleted (Result Http.Error ApiResult)
+    | Deleted (Result Http.Error DeleteResult)
     | CloseModal
 
 
@@ -151,7 +151,7 @@ view model =
                         text "Failed..."
                     
                     Success deleteResult ->
-                        text deleteResult.result
+                        text deleteResult.status
 
                     Loading ->
                         text "loading..."
@@ -200,7 +200,7 @@ deleteThread id =
             , Http.header "Content-Type" "application/json"
             ]
         , url = "http://127.0.0.1:8000/api/boards/" ++ String.fromInt id
-        , expect = Http.expectJson Deleted resultDecoder
+        , expect = Http.expectJson Deleted deleteResultDecoder
         , body = Http.emptyBody
         , timeout = Nothing
         , tracker = Nothing

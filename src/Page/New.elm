@@ -28,7 +28,7 @@ import Json.Encode as Encode
 type alias Model =
     { env : Env
     , thread : Thread
-    , responsePost : PageState ApiResult
+    , responsePost : PageState PostResult
     , navState : Navbar.State
     , modalVisibility : Modal.Visibility
     }
@@ -57,7 +57,7 @@ type Msg
     | Title String
     | Content String
     | Post
-    | Posted (Result Http.Error ApiResult)
+    | Posted (Result Http.Error PostResult)
     | CloseModal
 
 
@@ -138,34 +138,41 @@ view model =
                     [ Button.button [ Button.primary, Button.attrs [ onClick Post ] ] [ text "Post" ] ]
                 ]
             ]
-            , Modal.config CloseModal
-            |> Modal.small
-            |> Modal.hideOnBackdropClick True
-            |> Modal.h3 [] [ text "Message" ]
-            |> Modal.body [] [
-                p [] [
-                    case model.responsePost of
-                        Failure err ->
-                            text "Failed..."
-                        
-                        Success postResult ->
-                            text postResult.result
+            , let
+                message = case model.responsePost of
+                    Failure _ ->
+                        text "Failed..."
 
-                        Loading ->
-                            text "loading..."
-                        
-                        NotAsked ->
-                            text "not asked"
+                    Success _ ->
+                        text "Success"
+
+                    Loading ->
+                        text "loading..."
+
+                    NotAsked ->
+                        text "not asked"
+                link = case model.responsePost of
+                    Success postResult ->
+                        Route.href <| Route.Show postResult.result.id
+
+                    _ ->
+                        href "#"
+            in
+                Modal.config CloseModal
+                |> Modal.small
+                |> Modal.hideOnBackdropClick True
+                |> Modal.h3 [] [ text "Message" ]
+                |> Modal.body [] [
+                    p [] [ message ]
                 ]
-            ]
-            |> Modal.footer []
-                [ Button.linkButton
-                    [ Button.outlinePrimary
-                    , Button.attrs [ Route.href <| Route.Show 1 ]
+                |> Modal.footer []
+                    [ Button.linkButton
+                        [ Button.outlinePrimary
+                        , Button.attrs [ link ]
+                        ]
+                        [ text "OK" ]
                     ]
-                    [ text "OK" ]
-                ]
-            |> Modal.view model.modalVisibility
+                |> Modal.view model.modalVisibility
         ]
     }
 
@@ -182,7 +189,7 @@ postThread thread =
             , Http.header "Content-Type" "application/json"
             ]
         , url = "http://127.0.0.1:8000/api/boards/"
-        , expect = Http.expectJson Posted resultDecoder
+        , expect = Http.expectJson Posted postResultDecoder
         , body = Http.jsonBody <| encodeJsonThread thread
         , timeout = Nothing
         , tracker = Nothing
