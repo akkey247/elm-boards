@@ -2,6 +2,7 @@ module PageCommon exposing (..)
 
 import Http
 import Json.Decode as Decode
+import Threads exposing (..)
 
 type PageState a
     = NotAsked
@@ -9,11 +10,22 @@ type PageState a
     | Success a
     | Failure Http.Error
 
-type alias ApiResult =
-    { result : String
+type alias PostResult =
+    { status : String
+    , result : Thread
     }
 
-resultDecoder : Decode.Decoder ApiResult
-resultDecoder =
-    Decode.map ApiResult
-        (Decode.field "result" Decode.string)
+postResultDecoder : Decode.Decoder PostResult
+postResultDecoder =
+    Decode.map2 PostResult
+        (Decode.field "status" Decode.string)
+        (Decode.field "result" threadDecoder)
+
+type alias DeleteResult =
+    { status : String
+    }
+
+deleteResultDecoder : Decode.Decoder DeleteResult
+deleteResultDecoder =
+    Decode.map DeleteResult
+        (Decode.field "status" Decode.string)
