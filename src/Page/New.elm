@@ -14,7 +14,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import PageCommon exposing (..)
+import ApiCommon exposing (..)
 import Route
 
 
@@ -204,7 +204,7 @@ postThread thread =
             ]
         , url = "http://127.0.0.1:8000/api/boards/"
         , expect = Http.expectJson Posted postResultDecoder
-        , body = Http.jsonBody <| encodeJsonThread thread
+        , body = Http.jsonBody <| threadEncoder thread
         , timeout = Nothing
         , tracker = Nothing
         }

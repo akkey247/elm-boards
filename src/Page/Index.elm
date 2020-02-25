@@ -12,7 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import PageCommon exposing (..)
+import ApiCommon exposing (..)
 import Route
 
 

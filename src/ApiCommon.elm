@@ -1,4 +1,4 @@
-module PageCommon exposing (..)
+module ApiCommon exposing (..)
 
 import Http
 import Json.Decode exposing (..)
