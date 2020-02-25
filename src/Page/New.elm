@@ -182,7 +182,7 @@ view model =
                     [ Button.outlinePrimary
                     , Button.attrs [ link ]
                     ]
-                    [ text "OK" ]
+                    [ text "Go To Show" ]
                 ]
             |> Modal.view model.modalVisibility
         ]
@@ -220,7 +220,7 @@ menu model =
             [ Navbar.textItem []
                 [ Button.linkButton
                     [ Button.outlineDark, Button.attrs [ Spacing.ml1, Route.href Route.Index ] ]
-                    [ text "Back" ]
+                    [ text "Go To Index" ]
                 ]
             ]
         |> Navbar.view model.navState
