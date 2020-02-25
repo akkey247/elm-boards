@@ -14,7 +14,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Json.Encode as Encode
 import PageCommon exposing (..)
 import Route
 
@@ -226,13 +225,3 @@ menu model =
             ]
         |> Navbar.view model.navState
 
-
-encodeJsonThread : Thread -> Encode.Value
-encodeJsonThread thread =
-    let
-        attributes =
-            [ ( "title", Encode.string thread.title )
-            , ( "content", Encode.string thread.content )
-            ]
-    in
-    Encode.object attributes

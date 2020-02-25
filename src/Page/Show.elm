@@ -161,7 +161,7 @@ view model =
             |> Modal.body []
                 [ p []
                     [ case model.responseDelete of
-                        Failure err ->
+                        Failure _ ->
                             text "Failed..."
 
                         Success deleteResult ->

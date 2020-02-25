@@ -2,6 +2,7 @@ module PageCommon exposing (..)
 
 import Http
 import Json.Decode exposing (..)
+import Json.Encode exposing (..)
 
 
 type ApiResponse a
@@ -16,6 +17,16 @@ type alias Thread =
     , title : String
     , content : String
     }
+
+threadEncoder : Thread -> Json.Encode.Value
+threadEncoder thread =
+    let
+        attributes =
+            [ ( "title", Json.Encode.string thread.title )
+            , ( "content", Json.Encode.string thread.content )
+            ]
+    in
+        Json.Encode.object attributes
 
 
 threadDecoder : Decoder Thread
