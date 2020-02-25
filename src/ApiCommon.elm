@@ -18,6 +18,7 @@ type alias Thread =
     , content : String
     }
 
+
 threadEncoder : Thread -> Json.Encode.Value
 threadEncoder thread =
     let
@@ -26,7 +27,7 @@ threadEncoder thread =
             , ( "content", Json.Encode.string thread.content )
             ]
     in
-        Json.Encode.object attributes
+    Json.Encode.object attributes
 
 
 threadDecoder : Decoder Thread
