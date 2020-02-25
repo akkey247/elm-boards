@@ -3,13 +3,12 @@ module Main exposing (Flags, Model(..), Msg(..), changeRouteTo, init, main, subs
 import Browser
 import Browser.Navigation as Nav
 import Env exposing (Env)
-import Html exposing (Html, button, div, text)
+import Html exposing (button, div, text)
 import Html.Events exposing (onClick)
-import Id exposing (Id)
+import Page.Edit as EditPage
 import Page.Index as IndexPage
 import Page.New as NewPage
 import Page.Show as ShowPage
-import Page.Edit as EditPage
 import Route exposing (Route)
 import Url
 
@@ -34,8 +33,8 @@ type Model
     = NotFound Env
     | Index Env IndexPage.Model
     | New Env NewPage.Model
-    | Show Env Id ShowPage.Model
-    | Edit Env Id EditPage.Model
+    | Show Env Int ShowPage.Model
+    | Edit Env Int EditPage.Model
 
 
 type alias Flags =
@@ -198,7 +197,7 @@ view model =
     in
     case model of
         NotFound _ ->
-            { title = "Not Found", body = [ Html.text "Not Found" ] }
+            { title = "Not Found", body = [ text "Not Found" ] }
 
         Index _ subModel ->
             viewPage GotIndexMsg (IndexPage.view subModel)
