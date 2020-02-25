@@ -1,22 +1,21 @@
 module Page.Show exposing (Model, Msg, init, subscriptions, update, view)
 
-import Route
+import Bootstrap.Button as Button
+import Bootstrap.CDN as CDN
+import Bootstrap.Card as Card
+import Bootstrap.Card.Block as Block
+import Bootstrap.Grid as Grid
+import Bootstrap.Modal as Modal
+import Bootstrap.Navbar as Navbar
+import Bootstrap.Spinner as Spinner
+import Bootstrap.Utilities.Spacing as Spacing
+import Env exposing (Env)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Bootstrap.CDN as CDN
-import Bootstrap.Navbar as Navbar
-import Bootstrap.Grid as Grid
-import Bootstrap.Card as Card
-import Bootstrap.Card.Block as Block
-import Bootstrap.Button as Button
-import Bootstrap.Modal as Modal
-import Bootstrap.Spinner as Spinner
-import Bootstrap.Utilities.Spacing as Spacing
-import Env exposing (Env)
-import Threads exposing (..)
-import PageCommon exposing (..)
+import ApiCommon exposing (..)
+import Route
 
 
 
@@ -26,8 +25,8 @@ import PageCommon exposing (..)
 type alias Model =
     { env : Env
     , id : Int
-    , responseThread : PageState Thread
-    , responseDelete : PageState DeleteResult
+    , responseThread : ApiResponse Thread
+    , responseDelete : ApiResponse DeleteResult
     , navState : Navbar.State
     , modalVisibility : Modal.Visibility
     }
@@ -36,15 +35,21 @@ type alias Model =
 init : Env -> Int -> ( Model, Cmd Msg )
 init env id =
     let
-        responseThread = Loading
-        responseDelete = NotAsked
+        responseThread =
+            Loading
+
+        responseDelete =
+            NotAsked
+
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
-        modalVisibility = Modal.hidden
+
+        modalVisibility =
+            Modal.hidden
     in
-        ( Model env id responseThread responseDelete navState modalVisibility
-        , navCmd
-        )
+    ( Model env id responseThread responseDelete navState modalVisibility
+    , navCmd
+    )
 
 
 
@@ -75,13 +80,17 @@ update msg model =
         GotThread result ->
             case result of
                 Ok thread ->
-                    ( { model | responseThread = Success thread }, Cmd.none )
+                    ( { model | responseThread = Success thread }
+                    , Cmd.none
+                    )
 
                 Err error ->
-                    ( { model | responseThread = Failure error }, Cmd.none )
+                    ( { model | responseThread = Failure error }
+                    , Cmd.none
+                    )
 
         Delete ->
-            ( {model | responseDelete = Loading }
+            ( { model | responseDelete = Loading }
             , case model.responseThread of
                 Success thread ->
                     deleteThread thread.id
@@ -93,13 +102,19 @@ update msg model =
         Deleted result ->
             case result of
                 Ok deleteResult ->
-                    ( { model | responseDelete = Success deleteResult, modalVisibility = Modal.shown  }, Cmd.none )
+                    ( { model | responseDelete = Success deleteResult, modalVisibility = Modal.shown }
+                    , Cmd.none
+                    )
 
                 Err error ->
-                    ( { model | responseDelete = Failure error }, Cmd.none )
+                    ( { model | responseDelete = Failure error }
+                    , Cmd.none
+                    )
 
         CloseModal ->
-            ( { model | modalVisibility = Modal.hidden }, Cmd.none )
+            ( { model | modalVisibility = Modal.hidden }
+            , Cmd.none
+            )
 
 
 
@@ -123,56 +138,57 @@ view model =
         , Grid.container []
             [ menu model
             , article [ Spacing.mt2 ]
-                [
-                    case model.responseThread of
+                [ case model.responseThread of
                     Loading ->
                         viewLoading
 
                     Success thread ->
                         Card.config []
-                        |> Card.block []
-                            [ Block.titleH4 [] [ text thread.title ]
-                            , Block.text [] [ text thread.content ]
-                            ]
-                        |> Card.view
+                            |> Card.block []
+                                [ Block.titleH4 [] [ text thread.title ]
+                                , Block.text [] [ text thread.content ]
+                                ]
+                            |> Card.view
 
                     _ ->
                         viewLoading
                 ]
             ]
         , Modal.config CloseModal
-        |> Modal.small
-        |> Modal.hideOnBackdropClick True
-        |> Modal.h3 [] [ text "Message" ]
-        |> Modal.body [] [
-            p [] [
-                case model.responseDelete of
-                    Failure err ->
-                        text "Failed..."
-                    
-                    Success deleteResult ->
-                        text deleteResult.status
+            |> Modal.small
+            |> Modal.hideOnBackdropClick True
+            |> Modal.h3 [] [ text "Message" ]
+            |> Modal.body []
+                [ p []
+                    [ case model.responseDelete of
+                        Failure _ ->
+                            text "Failed..."
 
-                    Loading ->
-                        text "loading..."
-                    
-                    NotAsked ->
-                        text "not asked"
-            ]
-        ]
-        |> Modal.footer []
-            [ Button.linkButton
-                [ Button.outlinePrimary
-                , Button.attrs [ Route.href Route.Index ]
+                        Success deleteResult ->
+                            text deleteResult.status
+
+                        Loading ->
+                            text "loading..."
+
+                        NotAsked ->
+                            text "not asked"
+                    ]
                 ]
-                [ text "OK" ]
-            ]
-        |> Modal.view model.modalVisibility
+            |> Modal.footer []
+                [ Button.linkButton
+                    [ Button.outlinePrimary
+                    , Button.attrs [ Route.href Route.Index ]
+                    ]
+                    [ text "OK" ]
+                ]
+            |> Modal.view model.modalVisibility
         ]
     }
 
 
+
 -- User-Defined Functions
+
 
 getThreads : Int -> Cmd Msg
 getThreads id =
@@ -190,6 +206,7 @@ getThreads id =
         , tracker = Nothing
         }
 
+
 deleteThread : Int -> Cmd Msg
 deleteThread id =
     Http.request
@@ -205,6 +222,7 @@ deleteThread id =
         , timeout = Nothing
         , tracker = Nothing
         }
+
 
 menu : Model -> Html Msg
 menu model =
@@ -227,13 +245,17 @@ menu model =
             ]
         |> Navbar.view model.navState
 
+
 viewLoading : Html Msg
 viewLoading =
     div [ style "text-align" "center" ]
         [ Button.button
             [ Button.primary, Button.disabled True ]
             [ Spinner.spinner
-                [ Spinner.small, Spinner.attrs [ Spacing.mr3 ] ] []
+                [ Spinner.small
+                , Spinner.attrs [ Spacing.mr3 ]
+                ]
+                []
             , text "Loading..."
             ]
         ]

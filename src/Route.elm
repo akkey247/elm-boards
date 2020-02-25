@@ -3,7 +3,7 @@ module Route exposing (Route(..), fromUrl, href, parser, routeToString)
 import Html exposing (Attribute)
 import Html.Attributes as Attr
 import Url exposing (Url)
-import Url.Parser as Parser exposing (Parser, (</>))
+import Url.Parser as Parser exposing ((</>), Parser)
 
 
 type Route

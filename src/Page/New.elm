@@ -1,24 +1,21 @@
 module Page.New exposing (Model, Msg, init, subscriptions, update, view)
 
-import Route
+import Bootstrap.Button as Button
+import Bootstrap.CDN as CDN
+import Bootstrap.Form as Form
+import Bootstrap.Form.Input as Input
+import Bootstrap.Form.Textarea as Textarea
+import Bootstrap.Grid as Grid
+import Bootstrap.Modal as Modal
+import Bootstrap.Navbar as Navbar
+import Bootstrap.Utilities.Spacing as Spacing
+import Env exposing (Env)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Bootstrap.CDN as CDN
-import Bootstrap.Navbar as Navbar
-import Bootstrap.Grid as Grid
-import Bootstrap.Button as Button
-import Bootstrap.Modal as Modal
-import Bootstrap.Form as Form
-import Bootstrap.Form.Input as Input
-import Bootstrap.Form.Textarea as Textarea
-import Bootstrap.Utilities.Spacing as Spacing
-import Env exposing (Env)
-import Threads exposing (..)
-import PageCommon exposing (..)
-
-import Json.Encode as Encode
+import ApiCommon exposing (..)
+import Route
 
 
 
@@ -28,7 +25,7 @@ import Json.Encode as Encode
 type alias Model =
     { env : Env
     , thread : Thread
-    , responsePost : PageState PostResult
+    , responsePost : ApiResponse PostResult
     , navState : Navbar.State
     , modalVisibility : Modal.Visibility
     }
@@ -37,15 +34,21 @@ type alias Model =
 init : Env -> ( Model, Cmd Msg )
 init env =
     let
-        thread = Thread 0 "" ""
-        responsePost = NotAsked
+        thread =
+            Thread 0 "" ""
+
+        responsePost =
+            NotAsked
+
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
-        modalVisibility = Modal.hidden
+
+        modalVisibility =
+            Modal.hidden
     in
-        ( Model env thread responsePost navState modalVisibility
-        , navCmd
-        )
+    ( Model env thread responsePost navState modalVisibility
+    , navCmd
+    )
 
 
 
@@ -80,18 +83,26 @@ update msg model =
             )
 
         Post ->
-            ( {model | responsePost = Loading }, postThread model.thread)
+            ( { model | responsePost = Loading }
+            , postThread model.thread
+            )
 
         Posted result ->
             case result of
                 Ok postResult ->
-                    ( { model | responsePost = Success postResult, modalVisibility = Modal.shown }, Cmd.none )
+                    ( { model | responsePost = Success postResult, modalVisibility = Modal.shown }
+                    , Cmd.none
+                    )
 
                 Err error ->
-                    ( { model | responsePost = Failure error }, Cmd.none )
+                    ( { model | responsePost = Failure error }
+                    , Cmd.none
+                    )
 
         CloseModal ->
-            ( { model | modalVisibility = Modal.hidden }, Cmd.none )
+            ( { model | modalVisibility = Modal.hidden }
+            , Cmd.none
+            )
 
 
 
@@ -138,8 +149,9 @@ view model =
                     [ Button.button [ Button.primary, Button.attrs [ onClick Post ] ] [ text "Post" ] ]
                 ]
             ]
-            , let
-                message = case model.responsePost of
+        , let
+            message =
+                case model.responsePost of
                     Failure _ ->
                         text "Failed..."
 
@@ -151,33 +163,35 @@ view model =
 
                     NotAsked ->
                         text "not asked"
-                link = case model.responsePost of
+
+            link =
+                case model.responsePost of
                     Success postResult ->
                         Route.href <| Route.Show postResult.result.id
 
                     _ ->
                         href "#"
-            in
-                Modal.config CloseModal
-                |> Modal.small
-                |> Modal.hideOnBackdropClick True
-                |> Modal.h3 [] [ text "Message" ]
-                |> Modal.body [] [
-                    p [] [ message ]
-                ]
-                |> Modal.footer []
-                    [ Button.linkButton
-                        [ Button.outlinePrimary
-                        , Button.attrs [ link ]
-                        ]
-                        [ text "OK" ]
+          in
+          Modal.config CloseModal
+            |> Modal.small
+            |> Modal.hideOnBackdropClick True
+            |> Modal.h3 [] [ text "Message" ]
+            |> Modal.body [] [ p [] [ message ] ]
+            |> Modal.footer []
+                [ Button.linkButton
+                    [ Button.outlinePrimary
+                    , Button.attrs [ link ]
                     ]
-                |> Modal.view model.modalVisibility
+                    [ text "OK" ]
+                ]
+            |> Modal.view model.modalVisibility
         ]
     }
 
 
+
 -- User-Defined Functions
+
 
 postThread : Thread -> Cmd Msg
 postThread thread =
@@ -190,10 +204,11 @@ postThread thread =
             ]
         , url = "http://127.0.0.1:8000/api/boards/"
         , expect = Http.expectJson Posted postResultDecoder
-        , body = Http.jsonBody <| encodeJsonThread thread
+        , body = Http.jsonBody <| threadEncoder thread
         , timeout = Nothing
         , tracker = Nothing
         }
+
 
 menu : Model -> Html Msg
 menu model =
@@ -210,12 +225,3 @@ menu model =
             ]
         |> Navbar.view model.navState
 
-encodeJsonThread : Thread -> Encode.Value
-encodeJsonThread thread =
- let
-     attributes =
-         [ ("title", Encode.string thread.title)
-         , ("content", Encode.string thread.content)
-         ]
- in
-     Encode.object attributes

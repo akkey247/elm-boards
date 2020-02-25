@@ -2,7 +2,6 @@ module Page.Edit exposing (Model, Msg, init, subscriptions, update, view)
 
 import Env exposing (Env)
 import Html exposing (..)
-import Id exposing (Id)
 import Route
 
 

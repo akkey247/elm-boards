@@ -1,47 +1,54 @@
 module Page.Index exposing (Model, Msg, init, subscriptions, update, view)
 
-import Route
+import Bootstrap.Button as Button
+import Bootstrap.CDN as CDN
+import Bootstrap.Grid as Grid
+import Bootstrap.Navbar as Navbar
+import Bootstrap.Spinner as Spinner
+import Bootstrap.Table as Table
+import Bootstrap.Utilities.Spacing as Spacing
+import Env exposing (Env)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Bootstrap.CDN as CDN
-import Bootstrap.Navbar as Navbar
-import Bootstrap.Grid as Grid
-import Bootstrap.Table as Table
-import Bootstrap.Button as Button
-import Bootstrap.Spinner as Spinner
-import Bootstrap.Utilities.Spacing as Spacing
-import Env exposing (Env)
-import Threads exposing (..)
-import PageCommon exposing (..)
+import ApiCommon exposing (..)
+import Route
+
 
 
 -- MODEL
 
+
 type alias Model =
     { env : Env
-    , responseThreads : PageState (List Thread)
+    , responseThreads : ApiResponse (List Thread)
     , navState : Navbar.State
     }
+
 
 init : Env -> ( Model, Cmd Msg )
 init env =
     let
-        responseThreads = Loading
+        responseThreads =
+            Loading
+
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
     in
-        ( Model env responseThreads navState
-        , navCmd
-        )
+    ( Model env responseThreads navState
+    , navCmd
+    )
+
 
 
 -- UPDATE
 
+
 type Msg
     = NavMsg Navbar.State
     | GotThreads (Result Http.Error (List Thread))
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -59,20 +66,28 @@ update msg model =
         GotThreads result ->
             case result of
                 Ok threads ->
-                    ( { model | responseThreads = Success threads }, Cmd.none )
+                    ( { model | responseThreads = Success threads }
+                    , Cmd.none
+                    )
 
                 Err error ->
-                    ( { model | responseThreads = Failure error }, Cmd.none )
+                    ( { model | responseThreads = Failure error }
+                    , Cmd.none
+                    )
+
 
 
 -- SUBSCRIPTIONS
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Navbar.subscriptions model.navState NavMsg
 
 
+
 -- VIEW
+
 
 view : Model -> { title : String, body : List (Html Msg) }
 view model =
@@ -81,8 +96,8 @@ view model =
         [ CDN.stylesheet
         , Grid.container []
             [ viewNavbar model
-            , section [ Spacing.mt4 ] [
-                case model.responseThreads of
+            , section [ Spacing.mt4 ]
+                [ case model.responseThreads of
                     Loading ->
                         viewLoading
 
@@ -97,7 +112,9 @@ view model =
     }
 
 
+
 -- User-Defined Functions
+
 
 getThreads : Cmd Msg
 getThreads =
@@ -115,6 +132,7 @@ getThreads =
         , tracker = Nothing
         }
 
+
 viewNavbar : Model -> Html Msg
 viewNavbar model =
     Navbar.config NavMsg
@@ -130,16 +148,19 @@ viewNavbar model =
             ]
         |> Navbar.view model.navState
 
+
 viewLoading : Html Msg
 viewLoading =
     div [ style "text-align" "center" ]
         [ Button.button
             [ Button.primary, Button.disabled True ]
             [ Spinner.spinner
-                [ Spinner.small, Spinner.attrs [ Spacing.mr3 ] ] []
+                [ Spinner.small, Spinner.attrs [ Spacing.mr3 ] ]
+                []
             , text "Loading..."
             ]
         ]
+
 
 viewThreadList : List Thread -> Html Msg
 viewThreadList threads =
@@ -154,6 +175,7 @@ viewThreadList threads =
         , tbody =
             Table.tbody [] (List.map viewThreadItem threads)
         }
+
 
 viewThreadItem : Thread -> Table.Row Msg
 viewThreadItem thread =
