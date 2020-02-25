@@ -1,31 +1,55 @@
 module PageCommon exposing (..)
 
 import Http
-import Json.Decode as Decode
-import Threads exposing (..)
+import Json.Decode exposing (..)
 
-type PageState a
+
+type ApiResponse a
     = NotAsked
     | Loading
     | Success a
     | Failure Http.Error
+
+
+type alias Thread =
+    { id : Int
+    , title : String
+    , content : String
+    }
+
+
+threadDecoder : Decoder Thread
+threadDecoder =
+    Json.Decode.map3 Thread
+        (Json.Decode.field "id" Json.Decode.int)
+        (Json.Decode.field "title" Json.Decode.string)
+        (Json.Decode.field "content" Json.Decode.string)
+
+
+threadsDecoder : Decoder (List Thread)
+threadsDecoder =
+    Json.Decode.list threadDecoder
+
 
 type alias PostResult =
     { status : String
     , result : Thread
     }
 
-postResultDecoder : Decode.Decoder PostResult
+
+postResultDecoder : Decoder PostResult
 postResultDecoder =
-    Decode.map2 PostResult
-        (Decode.field "status" Decode.string)
-        (Decode.field "result" threadDecoder)
+    Json.Decode.map2 PostResult
+        (Json.Decode.field "status" Json.Decode.string)
+        (Json.Decode.field "result" threadDecoder)
+
 
 type alias DeleteResult =
     { status : String
     }
 
-deleteResultDecoder : Decode.Decoder DeleteResult
+
+deleteResultDecoder : Decoder DeleteResult
 deleteResultDecoder =
-    Decode.map DeleteResult
-        (Decode.field "status" Decode.string)
+    Json.Decode.map DeleteResult
+        (Json.Decode.field "status" Json.Decode.string)
