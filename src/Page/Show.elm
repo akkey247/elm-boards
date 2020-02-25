@@ -146,7 +146,7 @@ view model =
                         Card.config []
                             |> Card.block []
                                 [ Block.titleH4 [] [ text thread.title ]
-                                , Block.text [] [ text thread.content ]
+                                , Block.text [] <| newlineToBreak thread.content
                                 ]
                             |> Card.view
 
@@ -179,7 +179,7 @@ view model =
                     [ Button.outlinePrimary
                     , Button.attrs [ Route.href Route.Index ]
                     ]
-                    [ text "OK" ]
+                    [ text "Go To Index" ]
                 ]
             |> Modal.view model.modalVisibility
         ]
@@ -240,7 +240,7 @@ menu model =
                     [ text "Delete" ]
                 , Button.linkButton
                     [ Button.outlineDark, Button.attrs [ Spacing.ml1, Route.href Route.Index ] ]
-                    [ text "Back" ]
+                    [ text "Go To Index" ]
                 ]
             ]
         |> Navbar.view model.navState
@@ -259,3 +259,10 @@ viewLoading =
             , text "Loading..."
             ]
         ]
+
+
+newlineToBreak : String -> List (Html Msg)
+newlineToBreak str =
+    String.lines str
+        |> List.map (\s -> text s)
+        |> List.intersperse (br [] [])
