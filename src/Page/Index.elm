@@ -1,5 +1,6 @@
 module Page.Index exposing (Model, Msg, init, subscriptions, update, view)
 
+import ApiCommon exposing (..)
 import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
@@ -12,7 +13,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import ApiCommon exposing (..)
 import Route
 
 
