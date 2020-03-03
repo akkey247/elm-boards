@@ -199,7 +199,7 @@ getThreads id =
             , Http.header "Accept" "application/json"
             , Http.header "Content-Type" "application/json"
             ]
-        , url = "http://127.0.0.1:8000/api/boards/" ++ String.fromInt id
+        , url = "http://localhost:3000/api/boards/" ++ String.fromInt id
         , expect = Http.expectJson GotThread threadDecoder
         , body = Http.emptyBody
         , timeout = Nothing
@@ -216,7 +216,7 @@ deleteThread id =
             , Http.header "Accept" "application/json"
             , Http.header "Content-Type" "application/json"
             ]
-        , url = "http://127.0.0.1:8000/api/boards/" ++ String.fromInt id
+        , url = "http://localhost:3000/api/boards/" ++ String.fromInt id
         , expect = Http.expectJson Deleted deleteResultDecoder
         , body = Http.emptyBody
         , timeout = Nothing

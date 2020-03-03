@@ -125,7 +125,7 @@ getThreads =
             , Http.header "Accept" "application/json"
             , Http.header "Content-Type" "application/json"
             ]
-        , url = "http://127.0.0.1:8000/api/boards/"
+        , url = "http://localhost:3000/api/boards/"
         , expect = Http.expectJson GotThreads threadsDecoder
         , body = Http.emptyBody
         , timeout = Nothing
