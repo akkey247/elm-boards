@@ -27,20 +27,20 @@ services:
     image: mysql:5.7
     ports:
       - 3306:3306
+    volumes:
+      - ./db-data:/var/lib/mysql
+      - dbsocket:/var/run/mysqld
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_USER: user
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: testdb
-    volumes:
-      - ./db-data:/var/lib/mysql
-      - dbsocket:/var/run/mysqld
   node:
     build: ./docker/web
-    volumes:
-      - ./source/web:/app
     ports:
       - 8080:8080
+    volumes:
+      - ./source/web:/app
     command: sh -c "npm i && npm start"
 volumes:
   dbsocket:
